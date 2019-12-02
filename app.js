@@ -2,7 +2,7 @@ const nextButton = document.querySelector("#next"),
     prevButton = document.querySelector("#previous")
 
 let currentweek = 0,
-    programName = "pplPH";
+    programName = "pplPH2";
 
 class UI {
     addCurrentExercises(exercises) {
@@ -10,42 +10,102 @@ class UI {
         // create new UL element
         const newDiv = document.createElement("div");
         // assign class 
-        newDiv.className = "current-Day container mx-auto row "
-        
+        newDiv.className = "current-Day  mx-auto pt-4"
+
         exercises.forEach(e => {
-            newDiv.innerHTML += `
-        
-        `
-        if(e.type === "ladder"){
-            newDiv.innerHTML+= `
-            <div class="px-auto pt-3 alert alert-primary">
-        ${e.name}  : <input type="number" name="" id="" placeholder="${e.weight}"class="${e.name} input-box "> 
-        
-            <div class="container">
-                sets : ${e.sets[0]} / reps : ${e.reps[0]} / weight : ${Math.round( (e.weight)*.80)}
-            </div>
-            <div class="container">
-                sets : ${e.sets[1]} / reps : ${e.reps[1]} / weight : ${Math.round((e.weight)*.9)}
-            </div>
-            <div class="container">
-                sets : ${e.sets[2]} / reps : ${e.reps[2]} / weight : ${e.weight}
-            </div>
-            </div>
+
+            if (e.type === "ladder") {
+                const exDiv = document.createElement("div");
+                exDiv.className = "align-items-center   rounded  shadow p-3 mb-3 bg-light rounded"
+                exDiv.innerHTML += ` 
+                <div class="px-auto pt-3   ">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text bg-info text-white">${e.name}  : </span>
+                        </div>
+                        <input type="number"  placeholder="${e.weight}"class="${e.name} form-control w-25"> 
+                    </div>
+                </div>
+                
             `
-        }else{
-            newDiv.innerHTML+= `
+                const secDiv = document.createElement("div")
+                secDiv.className = "container m-2 text-center  border-left  border-info"
+
+                exDiv.appendChild(secDiv)
+                for (let i = 0; i < e.sets.length; i++) {
+                    const innerDiv = document.createElement("div");
+                    innerDiv.className = " mb-3 "
+                    innerDiv.innerHTML = `sets <span class="badge badge-info">${e.sets[i]}</span>    reps <span class="badge badge-info">${e.reps[i]}</span>    weight <span class="badge badge-info">${Math.round( (e.weight)*e.weightP[i])}</span>`
+                    secDiv.appendChild(innerDiv)
+
+                }
+                newDiv.appendChild(exDiv)
+
+            } else if (e.type === "superset") {
+                let exNames = ""
+
+                const exDiv = document.createElement("div");
+                exDiv.className = "align-items-center    rounded  shadow p-3 mb-3 bg-light rounded"
+                const nameTitle = document.createElement("p")
+                nameTitle.className = "bg-info text-white rounded p-2 mb-0 text-center shadow"
+                const exercisesDescription = document.createElement("div")
+                exercisesDescription.className = "  text-white  m-2 px-3 border-left border-info text-dark"
+
+                exDiv.innerHTML += ` 
+                <div class="px-auto pt-3  rounded">
+                        <div class="">
+                        </div> 
+                </div>
+            
+            `
+
+                for (let i = 0; i < e.exercises.length; i++) {
+                    if (i === e.exercises.length - 1) {
+
+                        exNames += e.exercises[i].name
+                    } else {
+                        exNames += e.exercises[i].name + " + "
+                    }
+                }
+
+                nameTitle.innerHTML = exNames
+                newDiv.appendChild(exDiv)
+
+                exDiv.children[0].children[0].appendChild(nameTitle)
+                e.exercises.forEach(element => {
+                    const innerDiv = document.createElement("div")
+                    innerDiv.innerHTML = `<div class="input-group mt-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text bg-info text-white">${element.name}  : </span>
+                    </div>
+                    <input type="number"  placeholder="${element.weight}"class="${element.name} form-control w-25"> 
+                </div>
+                    <div class = "container mb-3 ml-3">
+                        sets <span class="badge badge-info">${element.sets}</span> reps <span class="badge badge-info">${element.reps}</span>
+                    </div>
+                    `
+                    exercisesDescription.appendChild(innerDiv)
+                });
+
+                exDiv.children[0].children[0].appendChild(exercisesDescription)
+
+            } else {
+                newDiv.innerHTML += `
             <div class="px-auto pt-3 alert alert-primary">
-        ${e.name}  : <input type="number" name="" id="" placeholder="${e.weight}"class="${e.name} input-box 
-        <div class="container">
-                sets : ${e.sets} / reps : ${e.reps} 
+                ${e.name}: 
+                <input type="number" name="" id="" placeholder="
+                ${e.weight}"class="
+                ${e.name} input-box 
+                <div class="container">
+                    sets : ${e.sets} / reps : ${e.reps} 
             </div>
         </div>
         
         `
-        
-        }
-       
-        
+
+            }
+
+
         });
         list.appendChild(newDiv);
     }
@@ -56,7 +116,7 @@ class ProgramTemplate {
         let template;
         // check if the current exercise is saved into localStorage
         if (localStorage.getItem(programName) === null) {
-            template = excercises[programName];
+            template = exercises[programName];
         } else {
             // load if saved from localStorage
             template = JSON.parse(localStorage.getItem(programName))
@@ -67,7 +127,7 @@ class ProgramTemplate {
     static saveTemplate(template) {
         localStorage.setItem(programName, JSON.stringify(template))
     }
-    static displayExcercisese() {
+    static displayexercisese() {
         const ui = new UI()
         ui.addCurrentExercises(this.getCurrentDay())
     }
@@ -82,7 +142,7 @@ class ProgramTemplate {
     }
 }
 
-document.addEventListener("DOMContentLoaded", ProgramTemplate.displayExcercisese());
+document.addEventListener("DOMContentLoaded", ProgramTemplate.displayexercisese());
 
 
 // Button to advance to next day
@@ -142,20 +202,36 @@ document.querySelector(".container").addEventListener("change", (e) => {
     if (confirm("quieres cambiar el peso de este ejercicio?")) {
         // loops on current day to find index of changed weight
         currentDay.forEach((element, index) => {
-            if (element.name == changedWeigth) {
-                currentDay[index].weight = parseInt(e.target.value)
-                currentTemplate.ex[currentTemplate.currentDay] = currentDay
+
+            //change weight on supersets
+            if (element.type === "superset") {
+
+                element.exercises.forEach((el,i) => {
+                    
+                    
+                    if (el.name == changedWeigth) {
+                        currentDay[index].exercises[i].weight = parseInt(e.target.value)
+                        currentTemplate.ex[currentTemplate.currentDay] = currentDay
+                    }
+                });
+            } 
+            // change weight on non supersets
+            else {
+                if (element.name == changedWeigth) {
+
+                    currentDay[index].weight = parseInt(e.target.value)
+                    currentTemplate.ex[currentTemplate.currentDay] = currentDay
+                }
             }
         });
 
-        console.log(currentTemplate.ex[currentTemplate.currentDay])
-        console.log(currentTemplate)
+
         ProgramTemplate.saveTemplate(currentTemplate)
-    }else{
+    } else {
         e.target.value = ""
     }
     document.querySelector(".current-Day").remove()
-    ProgramTemplate.displayExcercisese()
+    ProgramTemplate.displayexercisese()
 
 })
 
